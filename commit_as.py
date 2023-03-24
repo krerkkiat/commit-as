@@ -5,6 +5,7 @@ import sys
 import sqlite3
 from pathlib import Path
 import os
+import platform
 
 
 @dataclass
@@ -36,10 +37,18 @@ class User:
         return f"id: {self.id_}, key: '{self.key}', name: '{self.name}' email_address: '{self.email_address}'"
 
 
+def get_user_home_path():
+    detected_os = platform.system()
+    if detected_os == "Linux" or detected_os == "Darwin":
+        return os.environ.get("HOME")
+    elif detected_os == "Windows":
+        return os.environ.get("HOMEDRIVE") + os.environ.get("HOMEPATH")
+
 class KnownUserDB:
     def __init__(self, path=None):
         if path is None:
-            path = Path(os.environ.get("HOME")) / "commit-as.sqlite3"
+            # FIXME: User on Windows does not have HOME variable.
+            path = Path(get_user_home_path()) / "commit-as.sqlite3"
 
         self.path = path
         self.con = None
@@ -162,7 +171,12 @@ def commit_as(user: User, args: list[str] = list()) -> None:
 
 def set_user(user: User, args: list[str] = list()) -> None:
     """Set user for Git."""
-    cmd = f"git config --global user.name {user.name}; git config --global user.email {user.email_address}"
+    cmd = f"git config --global user.name \"{user.name}\""
+    print(f"running: {cmd}")
+    proc = subprocess.run(cmd, shell=True)
+
+    cmd = f"git config --global user.email \"{user.email_address}\""
+    print(f"running: {cmd}")
     proc = subprocess.run(cmd, shell=True)
 
 
