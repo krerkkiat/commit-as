@@ -159,8 +159,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    db = KnownUserDB("./db.sqlite3")
-    db.connect()
-    db.create_tables()
-    db.add_user("kc", "Krerkkiat Chusap", "contact@kchusap.com")
+    main()
